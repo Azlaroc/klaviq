@@ -1,0 +1,25 @@
+# gitleaks configuration — klaviq
+# Local pre-commit + a GitHub Action both auto-discover this file in the repo
+# root. One ruleset, both ends, no drift.
+#
+# klaviq is a credential-handling tool, so the fail-closed secrets gate ships
+# from day one — not as an afterthought.
+
+title = "klaviq gitleaks config"
+
+# Upstream default ruleset — use the maintained rules, don't hand-roll.
+[extend]
+useDefault = true
+
+# Allowlist — kept DELIBERATELY MINIMAL. A broad allowlist re-creates the exact
+# failure mode gitleaks defends against. Only obvious, structurally-non-secret
+# artifacts go here; real false positives are tuned narrowly, with a comment,
+# when they actually occur.
+[allowlist]
+description = "Minimal allowlist"
+paths = [
+    # Example/template files that intentionally carry placeholder shapes.
+    '''\.example\.(json|env|toml)$''',
+    # gitleaks' own config (documents secret patterns by nature).
+    '''\.gitleaks\.toml$''',
+]

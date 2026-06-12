@@ -1,0 +1,17 @@
+# Per-machine settings (not committed)
+.claude/settings.local.json
+*.local.json
+
+# Secrets & auth material — NEVER commit (klaviq handles credentials)
+*.age
+*.key
+auth.dat
+seed.json
+.env
+*.env
+runtime/
+
+# OS noise
+.DS_Store
+Thumbs.db
+*.log
