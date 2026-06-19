@@ -1,0 +1,41 @@
+# Server-side secret scan — the backstop for the local pre-commit hook.
+#
+# Why this exists even with the local hook:
+#   - Backstop for `git commit --no-verify`
+#   - Catches commits pushed from a machine where core.hooksPath was never activated
+#     (the local hook is opt-in per machine)
+#   - Same maintained ruleset, enforced centrally
+#
+# Detection/alert only — true server-side *blocking* requires GitHub's paid Secret
+# Protection (deliberately declined). A failed run is the alert; remediation is
+# rotate-then-history-rewrite.
+#
+# Licensing: GITLEAKS_LICENSE is required only for org-owned repos. Personal repos
+# under Azlaroc → secret is empty → harmless.
+
+name: gitleaks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# gitleaks-action's pull_request path calls GET /pulls/{N}/commits, which needs
+# pull-requests:read. Without this block GITHUB_TOKEN defaults to contents/metadata-only
+# and the PR-event scan fails HTTP 403 ("Resource not accessible by integration") — the
+# push-event scan still passes, so this just unblocks the redundant PR-event pass (green check).
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  scan:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
